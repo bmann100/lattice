@@ -15,14 +15,14 @@ type TailedLogsOutputter interface {
 	StopOutputting()
 }
 
-type ConsoleTailedLogsOutputter struct {
+type consoleTailedLogsOutputter struct {
 	outputChan chan string
 	output     *output.Output
 	logReader  logs.LogReader
 }
 
-func NewConsoleTailedLogsOutputter(output *output.Output, logReader logs.LogReader) *ConsoleTailedLogsOutputter {
-	return &ConsoleTailedLogsOutputter{
+func NewConsoleTailedLogsOutputter(output *output.Output, logReader logs.LogReader) TailedLogsOutputter {
+	return &consoleTailedLogsOutputter{
 		outputChan: make(chan string, 10),
 		output:     output,
 		logReader:  logReader,
@@ -30,7 +30,7 @@ func NewConsoleTailedLogsOutputter(output *output.Output, logReader logs.LogRead
 
 }
 
-func (ctlo *ConsoleTailedLogsOutputter) OutputTailedLogs(appGuid string) {
+func (ctlo *consoleTailedLogsOutputter) OutputTailedLogs(appGuid string) {
 	go ctlo.logReader.TailLogs(appGuid, ctlo.logCallback, ctlo.errorCallback)
 
 	for log := range ctlo.outputChan {
@@ -38,16 +38,16 @@ func (ctlo *ConsoleTailedLogsOutputter) OutputTailedLogs(appGuid string) {
 	}
 }
 
-func (ctlo *ConsoleTailedLogsOutputter) StopOutputting() {
+func (ctlo *consoleTailedLogsOutputter) StopOutputting() {
 	ctlo.logReader.StopTailing()
 }
 
-func (ctlo *ConsoleTailedLogsOutputter) logCallback(log *events.LogMessage) {
+func (ctlo *consoleTailedLogsOutputter) logCallback(log *events.LogMessage) {
 	timeString := time.Unix(0, log.GetTimestamp()).Format("02 Jan 15:04")
 	logOutput := fmt.Sprintf("%s [%s|%s] %s", colors.Cyan(timeString), colors.Yellow(log.GetSourceType()), colors.Yellow(log.GetSourceInstance()), log.GetMessage())
 	ctlo.outputChan <- logOutput
 }
 
-func (ctlo *ConsoleTailedLogsOutputter) errorCallback(err error) {
+func (ctlo *consoleTailedLogsOutputter) errorCallback(err error) {
 	ctlo.outputChan <- err.Error()
 }
