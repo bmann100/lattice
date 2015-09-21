@@ -1,71 +1,3 @@
-resource "aws_vpc" "lattice-network" {
-    cidr_block = "${var.aws_vpc_cidr_block}"
-    enable_dns_support = true
-    enable_dns_hostnames = true
-    tags {
-        Name = "lattice"
-    }
-}
-
-resource "aws_subnet" "lattice-network" {
-    vpc_id = "${aws_vpc.lattice-network.id}"
-    cidr_block = "${var.aws_subnet_cidr_block}"
-    map_public_ip_on_launch = true
-    tags {
-        Name = "lattice"
-    }
-}
-
-resource "aws_internet_gateway" "lattice-network" {
-    vpc_id = "${aws_vpc.lattice-network.id}"
-}
-
-resource "aws_route_table" "lattice-network" {
-    vpc_id = "${aws_vpc.lattice-network.id}"
-    route {
-        cidr_block = "0.0.0.0/0"
-        gateway_id = "${aws_internet_gateway.lattice-network.id}"
-    }
-}
-
-resource "aws_route_table_association" "lattice-network" {
-    subnet_id = "${aws_subnet.lattice-network.id}"
-    route_table_id = "${aws_route_table.lattice-network.id}"
-}
-
-resource "aws_security_group" "lattice-network" {
-    name = "lattice"
-    description = "lattice security group"
-    vpc_id = "${aws_vpc.lattice-network.id}"
-    ingress {
-        protocol = "tcp"
-        from_port = 1
-        to_port = 65535
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        protocol = "udp"
-        from_port = 1
-        to_port = 65535
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    egress {
-        protocol = "tcp"
-        from_port = 1
-        to_port = 65535
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    egress {
-        protocol = "udp"
-        from_port = 1
-        to_port = 65535
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    tags {
-        Name = "lattice"
-    }
-}
-
 resource "aws_eip" "ip" {
     instance = "${aws_instance.lattice-brain.id}"
     vpc = true
@@ -75,11 +7,11 @@ resource "aws_eip" "ip" {
         key_file = "${var.aws_ssh_private_key_file}"
     }
     provisioner "remote-exec" {
-        inline = [
+        inline = [       
           "sudo sh -c 'echo \"SYSTEM_DOMAIN=${aws_eip.ip.public_ip}.xip.io\" >> /var/lattice/setup/lattice-environment'",
           "sudo restart receptor",
           "sudo restart trafficcontroller"
-        ]
+        ]   
     }
 }
 
@@ -88,9 +20,9 @@ resource "aws_instance" "lattice-brain" {
     instance_type = "${var.aws_instance_type_brain}"
     ebs_optimized = true
     key_name = "${var.aws_key_name}"
-    subnet_id = "${aws_subnet.lattice-network.id}"
+    subnet_id = "${var.aws_subnet_id}"
     security_groups = [
-        "${aws_security_group.lattice-network.id}",
+        "${var.aws_security_group}",
     ]
     tags {
         Name = "lattice-brain"
@@ -135,9 +67,9 @@ resource "aws_instance" "cell" {
     instance_type = "${var.aws_instance_type_cell}"
     ebs_optimized = true
     key_name = "${var.aws_key_name}"
-    subnet_id = "${aws_subnet.lattice-network.id}"
+    subnet_id = "${var.aws_subnet_id}"
     security_groups = [
-        "${aws_security_group.lattice-network.id}",
+        "${var.aws_security_group}",
     ]
     tags {
         Name = "cell-${count.index}"

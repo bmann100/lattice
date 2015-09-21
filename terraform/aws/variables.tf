@@ -15,6 +15,14 @@ variable "aws_key_name" {
     description = "The SSH key name to use for the instances."
 }
 
+variable "aws_subnet_id" {
+    description = "Predefined VPC Subnet for Lattice"
+}
+
+variable "aws_security_group" {
+    description = "Predefined Security Group for Lattice"
+}
+
 variable "aws_ssh_private_key_file" {
     description = "Path to the SSH private key file."
 }

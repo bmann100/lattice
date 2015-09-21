@@ -1,9 +1,9 @@
 module "lattice-aws" {
     # Specify a source containing the terraform configuration
-    # source = "<CHANGE ME>"
+    source = ".."
 
     # Specify a URL or local path to a lattice.tgz file for deployment
-    # lattice_tar_source = "<CHANGE-ME>"
+    lattice_tar_source = "http://lattice.s3.amazonaws.com/releases/backend/lattice-v0.4.3.tgz"
 
     # Specify an API username and password for your lattice cluster
     # lattice_username = "<CHANGE-ME>"
@@ -12,6 +12,10 @@ module "lattice-aws" {
     # AWS access key
     # aws_access_key = "<CHANGE-ME>"
 
+    # AWS Subnet ID and Security Group
+    # aws_subnet_id = "<CHANGE-ME>"
+    # aws_security_group = "<CHANGE-ME>"
+	
     # AWS secret key
     # aws_secret_key = "<CHANGE-ME>"
 
@@ -39,3 +43,4 @@ output "lattice_username" {
 output "lattice_password" {
     value = "${module.lattice-aws.lattice_password}"
 }
+
