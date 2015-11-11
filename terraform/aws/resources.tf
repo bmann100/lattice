@@ -2,13 +2,13 @@ resource "aws_eip" "ip" {
     instance = "${aws_instance.lattice-brain.id}"
     vpc = true
     connection {
-        host = "${aws_eip.ip.public_ip}"
+        host = "${aws_eip.ip.private_ip}"
         user = "${var.aws_ssh_user}"
         key_file = "${var.aws_ssh_private_key_file}"
     }
     provisioner "remote-exec" {
         inline = [       
-          "sudo sh -c 'echo \"SYSTEM_DOMAIN=${aws_eip.ip.public_ip}.xip.io\" >> /var/lattice/setup/lattice-environment'",
+          "sudo sh -c 'echo \"SYSTEM_DOMAIN=${aws_eip.ip.private_ip}.xip.io\" >> /var/lattice/setup/lattice-environment'",
           "sudo restart receptor",
           "sudo restart trafficcontroller"
         ]   
@@ -98,7 +98,7 @@ resource "aws_instance" "cell" {
         inline = [
             "sudo mkdir -p /var/lattice/setup",
             "sudo sh -c 'echo \"CONSUL_SERVER_IP=${aws_instance.lattice-brain.private_ip}\" >> /var/lattice/setup/lattice-environment'",
-            "sudo sh -c 'echo \"SYSTEM_DOMAIN=${aws_eip.ip.public_ip}.xip.io\" >> /var/lattice/setup/lattice-environment'",
+            "sudo sh -c 'echo \"SYSTEM_DOMAIN=${aws_eip.ip.private_ip}.xip.io\" >> /var/lattice/setup/lattice-environment'",
             "sudo sh -c 'echo \"LATTICE_CELL_ID=cell-${count.index}\" >> /var/lattice/setup/lattice-environment'",
             "sudo sh -c 'echo \"GARDEN_EXTERNAL_IP=$(hostname -I | awk '\"'\"'{ print $1 }'\"'\"')\" >> /var/lattice/setup/lattice-environment'",
 
