@@ -1,5 +1,5 @@
 output "lattice_target" {
-    value = "${aws_eip.ip.public_ip}.xip.io"
+    value = "${aws_eip.ip.private_ip}.xip.io"
 }
 
 output "lattice_username" {
